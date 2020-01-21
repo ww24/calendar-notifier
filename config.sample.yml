@@ -1,0 +1,28 @@
+version: 1
+
+calendar_id: ja.japanese#holiday@group.v.calendar.google.com
+
+handler:
+  light:
+    start:
+      - light_on
+    end:
+      - light_off
+
+action:
+  light_on:
+    type: http
+    method: POST
+    header:
+      "User-Agent":
+        - "calendar-worker/v1"
+    url: http://localhost/api/v1/light/on
+    payload: ""
+  light_off:
+    type: http
+    method: POST
+    header:
+      "User-Agent":
+        - "calendar-worker/v1"
+    url: http://localhost/api/v1/light/off
+    payload: ""

@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  worker:
+    container_name: calendar-worker
+    image: calendar-worker
+    environment:
+      TZ: Asia/Tokyo
+      SERVICE_ACCOUNT: ${SERVICE_ACCOUNT}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config.yml:/usr/local/etc/calendar-worker/config.yml:ro
+    restart: always

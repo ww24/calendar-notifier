@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+.envrc
+build/
+Dockerfile
+docker-compose.yml
+service_account.json
+config.yml

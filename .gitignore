@@ -1,0 +1,6 @@
+.*
+!.gitignore
+!.dockerignore
+
+config.yml
+service_account.json
