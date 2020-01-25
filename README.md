@@ -1,6 +1,8 @@
 calendar-worker
 ===
 
+![](https://github.com/ww24/calendar-worker/workflows/Test%20on%20master/badge.svg)
+
 Calendar Worker is Google Calendar event handler and actions.
 
 ## Features
@@ -29,6 +31,7 @@ Calendar Worker is Google Calendar event handler and actions.
 ## Usage
 
 ### For the docker-compose
+
 - Run `docker-compose up`
 
 ### For the docker
