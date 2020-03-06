@@ -9,6 +9,5 @@ services:
     environment:
       TZ: Asia/Tokyo
       SERVICE_ACCOUNT: ${SERVICE_ACCOUNT}
-    volumes:
-      - ./config.yml:/usr/local/etc/calendar-notifier/config.yml:ro
+      CONFIG: ${CONFIG}
     restart: always

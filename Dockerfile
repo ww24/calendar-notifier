@@ -14,5 +14,4 @@ COPY --from=build /usr/local/bin/calendar-notifier /usr/local/bin/calendar-notif
 COPY --from=build /go/src/github.com/ww24/calendar-notifier/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY --from=build /go/src/github.com/ww24/calendar-notifier/config.sample.yml /usr/local/etc/calendar-notifier/config.yml
 
-ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/local/etc/calendar-worker/credential.json
 ENTRYPOINT [ "entrypoint.sh" ]

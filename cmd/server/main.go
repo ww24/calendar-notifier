@@ -153,7 +153,7 @@ func newActionHander(actions map[config.ActionName]config.Action) (map[config.Ac
 		case config.ActionHTTP:
 			actionHandler[k] = action.NewHTTPAction(a.Header, a.Method, a.URL, a.Payload)
 		case config.ActionPubSub:
-			act, err := action.NewPubSubAction(a.Topic)
+			act, err := action.NewPubSubAction(a.Topic, a.Payload)
 			if err != nil {
 				return nil, err
 			}
