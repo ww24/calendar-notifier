@@ -1,9 +1,9 @@
-calendar-worker
+calendar-notifier
 ===
 
-![](https://github.com/ww24/calendar-worker/workflows/Test%20on%20master/badge.svg)
+![](https://github.com/ww24/calendar-notifier/workflows/Test%20on%20master/badge.svg)
 
-Calendar Worker is Google Calendar event handler and actions.
+Calendar Notifier is Google Calendar event handler and actions.
 
 ## Features
 
@@ -27,6 +27,8 @@ Calendar Worker is Google Calendar event handler and actions.
 - Set `SERVICE_ACCOUNT` environment. Use base64 encoded GCP Service Account JSON.
   - `echo "SERVICE_ACCOUNT=$(base64 < service_account.json)" > .env`
 - Edit `config.sample.yml` and save as `config.yml`.
+- Set `CONFIG` environment. Use base64 encoded config.yml.
+  - `echo "CONFIG=$(base64 < config.yml)" > .env`
 
 ## Usage
 
@@ -36,6 +38,5 @@ Calendar Worker is Google Calendar event handler and actions.
 
 ### For the docker
 
-- Run `docker build -t calendar-worker .`
-- Run `docker run -e SERVICE_ACCOUNT=$(base64 < service_account.json) calendar-worker`
-- Run `docker cp ./config.yml calendar-worker:/usr/local/etc/calendar-worker/config.yml` for update config file.
+- Run `docker build -t calendar-notifier .`
+- Run `docker run -e SERVICE_ACCOUNT=$(base64 < service_account.json) -e CONFIG=$(base64 < config.yml) calendar-notifier`

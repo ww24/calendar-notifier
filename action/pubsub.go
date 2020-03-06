@@ -9,7 +9,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"golang.org/x/oauth2/google"
 
-	calendar "github.com/ww24/calendar-worker"
+	"github.com/ww24/calendar-notifier"
 )
 
 var (
@@ -19,11 +19,12 @@ var (
 
 // PubSubAction implements action for pubsub.
 type PubSubAction struct {
-	topic string
+	topic   string
+	payload map[string]interface{}
 }
 
 // NewPubSubAction returns a new pubsub action.
-func NewPubSubAction(topic string) (*PubSubAction, error) {
+func NewPubSubAction(topic string, payload map[string]interface{}) (*PubSubAction, error) {
 	pubsubClientMutex.Lock()
 	defer pubsubClientMutex.Unlock()
 	if pubsubClient == nil {
@@ -39,7 +40,8 @@ func NewPubSubAction(topic string) (*PubSubAction, error) {
 		pubsubClient = cli
 	}
 	return &PubSubAction{
-		topic: topic,
+		topic:   topic,
+		payload: payload,
 	}, nil
 }
 
@@ -48,7 +50,13 @@ func (a *PubSubAction) Exec(ctx context.Context, e *calendar.EventItem) error {
 	topic := pubsubClient.Topic(a.topic)
 	defer topic.Stop()
 	topic.PublishSettings.Timeout = requestTimeout
-	d, err := json.Marshal(e)
+	var payload interface{}
+	if a.payload != nil {
+		payload = a.payload
+	} else {
+		payload = e
+	}
+	d, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}

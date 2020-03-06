@@ -44,14 +44,14 @@ type Action struct {
 	Type              ActionType `yaml:"type"`
 	HTTPRequestAction `yaml:",inline"`
 	CloudPubSubAction `yaml:",inline"`
+	Payload           map[string]interface{} `yaml:"payload"`
 }
 
 // HTTPRequestAction is configuration of HTTP action.
 type HTTPRequestAction struct {
-	Method  string      `yaml:"method"`
-	Header  http.Header `yaml:"header"`
-	URL     string      `yaml:"url"`
-	Payload string      `yaml:"payload"`
+	Method string      `yaml:"method"`
+	Header http.Header `yaml:"header"`
+	URL    string      `yaml:"url"`
 }
 
 // CloudPubSubAction is configuration of Cloud Pub/Sub action.

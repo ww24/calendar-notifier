@@ -1,11 +1,12 @@
-module github.com/ww24/calendar-worker
+module github.com/ww24/calendar-notifier
 
-go 1.13
+go 1.14
 
 require (
 	cloud.google.com/go v0.51.0 // indirect
 	cloud.google.com/go/pubsub v1.1.0
 	github.com/google/go-cmp v0.4.0 // indirect
+	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e

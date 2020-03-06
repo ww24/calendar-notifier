@@ -3,7 +3,7 @@ package main
 import (
 	"sync/atomic"
 
-	calendar "github.com/ww24/calendar-worker"
+	"github.com/ww24/calendar-notifier"
 )
 
 type itemsCache struct {
