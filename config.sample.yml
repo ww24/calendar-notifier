@@ -15,14 +15,12 @@ action:
     method: POST
     header:
       "User-Agent":
-        - "calendar-worker/v1"
+        - "calendar-notifier/v1"
     url: http://localhost/api/v1/light/on
-    payload: ""
   light_off:
     type: http
     method: POST
     header:
       "User-Agent":
-        - "calendar-worker/v1"
+        - "calendar-notifier/v1"
     url: http://localhost/api/v1/light/off
-    payload: ""

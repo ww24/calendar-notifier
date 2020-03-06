@@ -9,7 +9,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"golang.org/x/oauth2/google"
 
-	calendar "github.com/ww24/calendar-worker"
+	"github.com/ww24/calendar-notifier"
 )
 
 var (

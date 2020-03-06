@@ -3,7 +3,7 @@ name: Test for PR
 on: pull_request
 
 env:
-  IMAGE_NAME: worker
+  IMAGE_NAME: notifier
   IMAGE_TAG: latest
 
 jobs:

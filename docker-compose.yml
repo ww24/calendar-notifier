@@ -1,14 +1,14 @@
 version: "3.7"
 services:
-  worker:
-    container_name: calendar-worker
-    image: calendar-worker
-    environment:
-      TZ: Asia/Tokyo
-      SERVICE_ACCOUNT: ${SERVICE_ACCOUNT}
+  notifier:
+    container_name: calendar-notifier
+    image: calendar-notifier
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      TZ: Asia/Tokyo
+      SERVICE_ACCOUNT: ${SERVICE_ACCOUNT}
     volumes:
-      - ./config.yml:/usr/local/etc/calendar-worker/config.yml:ro
+      - ./config.yml:/usr/local/etc/calendar-notifier/config.yml:ro
     restart: always

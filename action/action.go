@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/ww24/calendar-worker"
+	"github.com/ww24/calendar-notifier"
 )
 
 const (

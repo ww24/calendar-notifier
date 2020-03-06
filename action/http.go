@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ww24/calendar-worker"
+	"github.com/ww24/calendar-notifier"
 )
 
 var (

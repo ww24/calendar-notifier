@@ -1,4 +1,4 @@
-module github.com/ww24/calendar-worker
+module github.com/ww24/calendar-notifier
 
 go 1.13
 

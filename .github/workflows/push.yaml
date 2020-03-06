@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  IMAGE_NAME: worker
+  IMAGE_NAME: notifier
   IMAGE_TAG: latest
 
 jobs:
@@ -70,4 +70,4 @@ jobs:
       - name: Push docker image
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u owner --password-stdin docker.pkg.github.com
-          docker push "docker.pkg.github.com/${GITHUB_REPOSITORY}/worker:${IMAGE_TAG}"
+          docker push "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
