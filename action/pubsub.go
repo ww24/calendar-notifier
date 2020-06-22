@@ -15,7 +15,17 @@ import (
 var (
 	pubsubClient      *pubsub.Client
 	pubsubClientMutex sync.Mutex
+	defaultProjectID  string
 )
+
+func init() {
+	ctx := context.Background()
+	cred, err := google.FindDefaultCredentials(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defaultProjectID = cred.ProjectID
+}
 
 // PubSubAction implements action for pubsub.
 type PubSubAction struct {
@@ -23,17 +33,22 @@ type PubSubAction struct {
 	payload map[string]interface{}
 }
 
-// NewPubSubAction returns a new pubsub action.
-func NewPubSubAction(topic string, payload map[string]interface{}) (*PubSubAction, error) {
+// NewPubSub returns an action for cloud pubsub.
+func NewPubSub(topic string, payload map[string]interface{}) (Action, error) {
+	action, err := newPubSubAction(topic, payload)
+	if err != nil {
+		return nil, err
+	}
+	return wrapAction(action), nil
+}
+
+// newPubSubAction returns a new pubsub action.
+func newPubSubAction(topic string, payload map[string]interface{}) (*PubSubAction, error) {
 	pubsubClientMutex.Lock()
 	defer pubsubClientMutex.Unlock()
 	if pubsubClient == nil {
 		ctx := context.Background()
-		cred, err := google.FindDefaultCredentials(ctx)
-		if err != nil {
-			return nil, err
-		}
-		cli, err := pubsub.NewClient(ctx, cred.ProjectID)
+		cli, err := pubsub.NewClient(ctx, defaultProjectID)
 		if err != nil {
 			return nil, err
 		}
@@ -45,8 +60,8 @@ func NewPubSubAction(topic string, payload map[string]interface{}) (*PubSubActio
 	}, nil
 }
 
-// Exec executes pubsub action.
-func (a *PubSubAction) Exec(ctx context.Context, e *calendar.EventItem) error {
+// ExecImmediately executes pubsub action.
+func (a *PubSubAction) ExecImmediately(ctx context.Context, e *calendar.EventItem) error {
 	topic := pubsubClient.Topic(a.topic)
 	defer topic.Stop()
 	topic.PublishSettings.Timeout = requestTimeout

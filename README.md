@@ -8,11 +8,12 @@ Calendar Notifier is Google Calendar event handler and actions.
 ## Features
 
 - Events
-	- [x] [Calendar Events List API](https://developers.google.com/calendar/v3/reference/events/list)
-	- [ ] [Calendar Events Watch API](https://developers.google.com/calendar/v3/reference/events/watch)
+  - [x] [Calendar Events List API](https://developers.google.com/calendar/v3/reference/events/list)
+  - [ ] [Calendar Events Watch API](https://developers.google.com/calendar/v3/reference/events/watch)
 - Actions
-	- [x] HTTP Action
-	- [x] [Cloud Pub/Sub](https://cloud.google.com/pubsub/) Action
+  - [x] HTTP Action
+  - [x] [Cloud Pub/Sub](https://cloud.google.com/pubsub/) Action
+  - [x] [Cloud Tasks](https://cloud.google.com/tasks/) Action
 
 ## Setup
 

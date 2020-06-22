@@ -39,24 +39,44 @@ type EventItem struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 
-	mutex      sync.Mutex
-	cancel     func()
-	registered bool
+	mutex     sync.Mutex
+	cancel    func()
+	scheduled bool
 }
 
-// Register registeres event handler.
-func (e *EventItem) Register(now time.Time, handler func(context.Context, *EventItem)) bool {
+// Started returns true if event is started.
+func (e *EventItem) Started(now time.Time) bool {
+	return now.After(e.StartAt)
+}
+
+// Exec executes event handler immediately.
+func (e *EventItem) Exec(now time.Time, handler func(context.Context, *EventItem)) {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
-	defer func() { e.registered = true }()
-	if e.registered {
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if !e.Started(now) {
+		e.EventType = Start
+		handler(ctx, e)
+	}
+	e.EventType = End
+	handler(ctx, e)
+}
+
+// Schedule schedules event handler.
+func (e *EventItem) Schedule(now time.Time, handler func(context.Context, *EventItem)) bool {
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
+	defer func() { e.scheduled = true }()
+	if e.scheduled {
 		return false
 	}
 
-	started := now.After(e.StartAt)
 	var startTimer *time.Timer
 	endTimer := time.NewTimer(e.EndAt.Sub(now))
-	if !started {
+	if !e.Started(now) {
 		startTimer = time.NewTimer(e.StartAt.Sub(now))
 	}
 
@@ -97,8 +117,8 @@ func (e *EventItem) Register(now time.Time, handler func(context.Context, *Event
 	return true
 }
 
-// Cancel canceles event handler.
-func (e *EventItem) Cancel() {
+// CancelSchedule canceles scheduled event handler.
+func (e *EventItem) CancelSchedule() {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 	if e.cancel != nil {
