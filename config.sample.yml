@@ -1,5 +1,6 @@
 version: 1
 
+mode: resident
 calendar_id: ja.japanese#holiday@group.v.calendar.google.com
 
 handler:

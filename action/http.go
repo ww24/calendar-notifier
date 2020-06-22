@@ -29,8 +29,14 @@ type HTTPAction struct {
 	payload map[string]interface{}
 }
 
-// NewHTTPAction returns a new http action.
-func NewHTTPAction(header http.Header, method, url string, payload map[string]interface{}) *HTTPAction {
+// NewHTTP returns an action for http.
+func NewHTTP(header http.Header, method, url string, payload map[string]interface{}) Action {
+	action := newHTTPAction(header, method, url, payload)
+	return wrapAction(action)
+}
+
+// newHTTPAction returns a new http action.
+func newHTTPAction(header http.Header, method, url string, payload map[string]interface{}) *HTTPAction {
 	return &HTTPAction{
 		header:  header,
 		method:  method,
@@ -39,8 +45,8 @@ func NewHTTPAction(header http.Header, method, url string, payload map[string]in
 	}
 }
 
-// Exec executes pubsub action.
-func (a *HTTPAction) Exec(ctx context.Context, e *calendar.EventItem) error {
+// ExecImmediately executes pubsub action.
+func (a *HTTPAction) ExecImmediately(ctx context.Context, e *calendar.EventItem) error {
 	var body io.Reader
 	if a.payload != nil {
 		b := &bytes.Buffer{}
@@ -50,11 +56,13 @@ func (a *HTTPAction) Exec(ctx context.Context, e *calendar.EventItem) error {
 		}
 		body = b
 	}
-	req, err := http.NewRequest(a.method, a.url, body)
+	req, err := http.NewRequestWithContext(ctx, a.method, a.url, body)
 	if err != nil {
 		return err
 	}
-	req.Header = a.header
+	if a.header != nil {
+		req.Header = a.header
+	}
 	if body != nil && req.Header.Get(contentTypeHeader) == "" {
 		req.Header.Set(contentTypeHeader, "application/json")
 	}
