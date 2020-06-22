@@ -1,4 +1,4 @@
-FROM golang:1.13.6-alpine3.11 AS build
+FROM golang:1.14-alpine3.12 AS build
 
 WORKDIR /go/src/github.com/ww24/calendar-notifier
 COPY . /go/src/github.com/ww24/calendar-notifier
@@ -6,7 +6,7 @@ ENV CGO_ENABLED=0
 RUN go build -o /usr/local/bin/calendar-notifier ./cmd/server
 
 
-FROM alpine:3.11
+FROM alpine:3.12
 
 RUN apk add --no-cache tzdata ca-certificates
 
