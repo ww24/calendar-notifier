@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -6,35 +6,35 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ww24/calendar-notifier/config"
+	"github.com/ww24/calendar-notifier/usecase"
 )
 
-type handler struct {
-	conf    config.Config
-	handler func() (map[string]interface{}, error)
-}
-
-func newHandler(conf config.Config, hf func() (map[string]interface{}, error)) *handler {
-	return &handler{
-		conf:    conf,
-		handler: hf,
-	}
-}
-
-func (h *handler) Handler() http.Handler {
+// New returns http handler.
+func New(sync usecase.Synchronizer) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", h.defaultHandler)
-	mux.HandleFunc("/launch", h.launchHandler)
+	svc := newService(sync)
+	mux.HandleFunc("/", svc.defaultHandler)
+	mux.HandleFunc("/launch", svc.sync)
 	return mux
 }
 
-func (h *handler) defaultHandler(w http.ResponseWriter, r *http.Request) {
+type syncService struct {
+	syn usecase.Synchronizer
+}
+
+func newService(sync usecase.Synchronizer) *syncService {
+	return &syncService{
+		syn: sync,
+	}
+}
+
+func (s *syncService) defaultHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
 	res := map[string]interface{}{
 		"status": "ok",
-		"mode":   h.conf.Mode,
+		"mode":   s.syn.RunningMode(),
 	}
 	d, err := json.Marshal(res)
 	if err != nil {
@@ -42,10 +42,10 @@ func (h *handler) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintln(w, string(d))
+	w.Write(append(d, '\n'))
 }
 
-func (h *handler) launchHandler(w http.ResponseWriter, r *http.Request) {
+func (s *syncService) sync(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodOptions:
 		return
@@ -55,18 +55,19 @@ func (h *handler) launchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.handler()
-	if err != nil {
+	if err := s.syn.Sync(r.Context()); err != nil {
 		sendError(w, r, err)
 		return
 	}
+
+	res := map[string]interface{}{"status": "maybe ok"}
 	d, err := json.Marshal(res)
 	if err != nil {
 		sendError(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintln(w, string(d))
+	w.Write(append(d, '\n'))
 }
 
 func sendError(w http.ResponseWriter, r *http.Request, err error) {
