@@ -33,8 +33,12 @@ deploy-scheduler:
 	--oidc-service-account-email="${SCHEDULER_SERVICE_ACCOUNT_EMAIL}" \
 	--time-zone="Asia/Tokyo"
 
-.PHONY: run-local
+.PHONY: run
 run:
 	@CONFIG=$(CONFIG) \
 	docker-compose up -d
 	docker logs -f calendar-notifier
+
+.PHONY: install-tools
+install-tools:
+	cat tools.go | awk -F'"' '/_/ {print $$2}' | xargs -tI {} go install {}

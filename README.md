@@ -33,11 +33,56 @@ Calendar Notifier is Google Calendar event handler and actions.
 
 ## Usage
 
-### For the docker-compose
+### Use docker-compose
 
 - Run `docker-compose up`
 
-### For the docker
+### Use docker
 
 - Run `docker build -t calendar-notifier .`
 - Run `docker run -e SERVICE_ACCOUNT=$(base64 < service_account.json) -e CONFIG=$(base64 < config.yml) calendar-notifier`
+
+## Permission
+
+### Cloud Tasks
+
+If use Cloud Tasks Action, service account should have the following permissions.
+
+```
+cloudtasks.tasks.list
+cloudtasks.tasks.create
+cloudtasks.tasks.delete
+iam.serviceAccounts.actAs
+```
+
+For example, give your service account the following roles.
+
+```
+roles/cloudtasks.viewer
+roles/cloudtasks.enqueuer
+roles/cloudtasks.taskDeleter
+roles/iam.serviceAccountUser
+```
+
+#### References
+- https://cloud.google.com/tasks/docs/reference-access-control
+- https://cloud.google.com/iam/docs/understanding-service-accounts?hl=ja#sa_common
+
+
+### Cloud Pub/Sub
+
+If use Cloud Pub/Sub Action, service account should have the following permissions.
+
+```
+pubsub.topics.publish
+```
+
+For example, give your service account the following roles.
+
+```
+roles/pubsub.publisher
+```
+
+
+#### References
+- https://cloud.google.com/pubsub/docs/access-control

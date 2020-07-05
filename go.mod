@@ -6,9 +6,9 @@ require (
 	cloud.google.com/go v0.58.0
 	cloud.google.com/go/pubsub v1.4.0
 	github.com/golang/protobuf v1.4.2
+	github.com/google/wire v0.4.0
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/tools v0.0.0-20200619210111-0f592d2728bb
 	google.golang.org/api v0.28.0
 	google.golang.org/genproto v0.0.0-20200620020550-bd6e04640131
