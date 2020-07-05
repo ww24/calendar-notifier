@@ -75,7 +75,7 @@ func (a *HTTP) Register(_ context.Context, events ...model.ScheduleEvent) error 
 			if err != nil {
 				return err
 			}
-			log.Println("Sent, status:", resp.Status)
+			log.Println("[http action] sent, status:", resp.Status)
 			return nil
 		})
 	}

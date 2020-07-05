@@ -163,7 +163,7 @@ func (a *Tasks) Register(ctx context.Context, events ...model.ScheduleEvent) err
 				},
 			},
 		}
-		log.Println("Register, task_name:", req.Task.Name)
+		log.Println("[tasks action] register, task_name:", req.Task.Name)
 		requests = append(requests, req)
 	}
 	return a.registerTasks(ctx, requests...)
@@ -175,7 +175,7 @@ func (a *Tasks) registerTasks(ctx context.Context, requests ...*taskspb.CreateTa
 		if err != nil {
 			switch status.Code(err) {
 			case codes.AlreadyExists:
-				log.Printf("Already exists, task_name: %v\n", req.Task.Name)
+				log.Printf("[tasks action] already exists, task_name: %v\n", req.Task.Name)
 				continue
 			default:
 				return err
@@ -192,7 +192,7 @@ func (a *Tasks) Unregister(ctx context.Context, events ...model.ScheduleEvent) e
 		req := &taskspb.DeleteTaskRequest{
 			Name: a.generateTaskName(event.ID(delimiter)),
 		}
-		log.Println("Unregister, task_name:", req.Name)
+		log.Println("[tasks action] unregister, task_name:", req.Name)
 		requests = append(requests, req)
 	}
 	return a.unregisterTasks(ctx, requests...)

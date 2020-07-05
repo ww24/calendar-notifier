@@ -84,7 +84,7 @@ func (a *PubSub) Register(_ context.Context, events ...model.ScheduleEvent) erro
 			if err != nil {
 				return err
 			}
-			log.Println("Published, server_id:", id)
+			log.Println("[pubsub action] published, server_id:", id)
 			return nil
 		})
 	}
