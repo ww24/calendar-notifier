@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - uses: actions/setup-go@v1
         with:
           go-version: "1.14"
@@ -24,7 +30,7 @@ jobs:
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
       - name: Install go tools
-        run: cat tools.go | grep _ | awk -F '"' '{print $2}' | xargs -tI {} go install {}
+        run: cat tools.go | awk -F'"' '/_/ {print $2}' | xargs -tI {} go install {}
       - name: go generate
         run: go generate ./...
       - name: Check uncommitted changes
@@ -39,19 +45,13 @@ jobs:
       - run: go vet ./...
       - run: go test -v -race ./...
 
-  docker:
-    needs: test
-    name: Build and push docker image
+  docker_build_test:
+    name: Build docker image
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set image tag
-        run: |
-          tag=$(echo "${GITHUB_REF}" | sed "s/^refs\/tags\/v//")
-          if [ -z "$tag" ]; then
-            exit 1
-          fi
-          echo "::set-env name=IMAGE_TAG::$tag"
       - name: Shellcheck
         env:
           SHELLCHECK_OPTS: -e SC2187
@@ -74,6 +74,26 @@ jobs:
         run: |
           trivy -q --severity HIGH,CRITICAL --exit-code 1 \
             "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+  docker_push:
+    needs: [test, docker_build_test]
+    name: Build and push docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Set image tag
+        run: |
+          tag=$(echo "${GITHUB_REF}" | sed "s/^refs\/tags\/v//")
+          if [ -z "$tag" ]; then
+            exit 1
+          fi
+          echo "::set-env name=IMAGE_TAG::$tag"
       - name: Docker login
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -82,10 +102,13 @@ jobs:
       - name: Build docker image and push (DockerHub)
         run: |
           docker buildx build \
+            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --cache-to "type=local,dest=/tmp/.buildx-cache" \
             --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 \
             --output "type=image,push=true" \
             -t "${DOCKER_REPO}":${IMAGE_TAG} .
       - name: Push docker image (GitHub)
         run: |
+          docker build -t "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}" .
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u owner --password-stdin docker.pkg.github.com
           docker push "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
