@@ -1,9 +1,11 @@
 calendar-notifier
 ===
 
-![](https://github.com/ww24/calendar-notifier/workflows/Test%20on%20master/badge.svg)
+![Test on master][github-actions-img]
 
-Calendar Notifier is Google Calendar event handler and actions.
+Calendar Notifier provides event handler and actions triggered by Google Calendar.
+
+[![dockeri.co][dockeri-img]][dockeri-url]
 
 ## Features
 
@@ -86,3 +88,7 @@ roles/pubsub.publisher
 
 #### References
 - https://cloud.google.com/pubsub/docs/access-control
+
+[github-actions-img]: https://github.com/ww24/calendar-notifier/workflows/Test%20on%20master/badge.svg?branch=master
+[dockeri-img]: https://dockeri.co/image/ww24/calendar-notifier
+[dockeri-url]: https://hub.docker.com/r/ww24/calendar-notifier
