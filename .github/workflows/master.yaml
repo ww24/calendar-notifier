@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 env:
-  IMAGE_NAME: notifier
+  DOCKER_REPO: ww24/calendar-notifier
+  IMAGE_NAME: calendar-notifier
   IMAGE_TAG: latest
 
 jobs:
@@ -15,16 +19,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - uses: actions/setup-go@v1
         with:
-          go-version: "1.13"
+          go-version: "1.14"
       - name: setup env
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
       - name: Install go tools
-        run: cat tools.go | grep _ | awk -F '"' '{print $2}' | xargs -tI {} go install {}
+        run: cat tools.go | awk -F'"' '/_/ {print $2}' | xargs -tI {} go install {}
       - name: go generate
         run: go generate ./...
       - name: Check uncommitted changes
@@ -39,9 +49,8 @@ jobs:
       - run: go vet ./...
       - run: go test -v -race ./...
 
-  docker:
-    needs: test
-    name: Build and push docker image
+  docker_build_test:
+    name: Build docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -67,7 +76,35 @@ jobs:
         run: |
           trivy -q --severity HIGH,CRITICAL --exit-code 1 \
             "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
-      - name: Push docker image
+
+  docker_push:
+    if: ${{ github.event_name == 'push' }}
+    needs: [test, docker_build_test]
+    name: Build and push docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Docker login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USER}" --password-stdin
+      - name: Build docker image and push (DockerHub)
         run: |
+          docker buildx build \
+            --cache-from "type=local,src=/tmp/.buildx-cache" \
+            --cache-to "type=local,dest=/tmp/.buildx-cache" \
+            --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 \
+            --output "type=image,push=true" \
+            -t "${DOCKER_REPO}":${IMAGE_TAG} .
+      - name: Build docker image and push (GitHub)
+        run: |
+          docker build -t "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}" .
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u owner --password-stdin docker.pkg.github.com
           docker push "docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
