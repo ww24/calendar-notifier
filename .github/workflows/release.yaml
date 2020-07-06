@@ -81,6 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: crazy-max/ghaction-docker-buildx@v3
       - uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
