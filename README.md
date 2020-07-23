@@ -9,6 +9,8 @@ Calendar Notifier provides event handler and actions triggered by Google Calenda
 
 ## Features
 
+![diagram](./docs/diagram.drawio.svg)
+
 - Events
   - [x] [Calendar Events List API](https://developers.google.com/calendar/v3/reference/events/list)
   - [ ] [Calendar Events Watch API](https://developers.google.com/calendar/v3/reference/events/watch)
