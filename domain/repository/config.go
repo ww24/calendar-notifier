@@ -13,4 +13,5 @@ type Config interface {
 	RunningMode() model.RunningMode
 	SyncInterval() time.Duration
 	Calendar() string
+	CalendarWebhookURL() (string, bool)
 }

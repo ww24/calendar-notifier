@@ -1,7 +1,11 @@
-version: 1
+version: "1"
 
 mode: resident
+interval: "1m"
 calendar_id: ja.japanese#holiday@group.v.calendar.google.com
+calendar_webhook:
+  disable: true
+  address: "https://example.com/notify"
 
 handler:
   light:
