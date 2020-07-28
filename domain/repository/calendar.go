@@ -10,4 +10,5 @@ import (
 // Calendar is the interface to control calendar service.
 type Calendar interface {
 	List(ctx context.Context, since, until time.Time) (model.Schedules, error)
+	Watch(ctx context.Context, address string, ttl time.Duration) error
 }

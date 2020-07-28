@@ -14,7 +14,8 @@ func New(sync usecase.Synchronizer) http.Handler {
 	mux := http.NewServeMux()
 	svc := newService(sync)
 	mux.HandleFunc("/", svc.defaultHandler)
-	mux.HandleFunc("/launch", svc.sync)
+	mux.HandleFunc("/launch", svc.sync) // TODO: change to sync
+	mux.HandleFunc("/notify", svc.notify)
 	return mux
 }
 
@@ -46,6 +47,8 @@ func (s *syncService) defaultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *syncService) sync(w http.ResponseWriter, r *http.Request) {
+	// TODO: IAM 認証
+
 	switch r.Method {
 	case http.MethodOptions:
 		return
@@ -68,6 +71,22 @@ func (s *syncService) sync(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(append(d, '\n'))
+}
+
+func (s *syncService) notify(w http.ResponseWriter, r *http.Request) {
+	// TODO: api key による認証
+
+	if r.Header.Get("content-type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// FIXME: DEBUG出力
+	m := make(map[string]interface{})
+	json.NewDecoder(r.Body).Decode(&m)
+	fmt.Printf("%+v\n", m)
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func sendError(w http.ResponseWriter, r *http.Request, err error) {

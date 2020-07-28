@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -20,16 +21,47 @@ const (
 
 // Config represents a config.yml.
 type Config struct {
-	Version    string                      `yaml:"version"`
-	Mode       model.RunningMode           `yaml:"mode"`
-	Interval   time.Duration               `yaml:"interval"`
-	CalendarID string                      `yaml:"calendar_id"`
-	Handler    map[string]EventHandler     `yaml:"handler"`
-	Action     map[model.ActionName]Action `yaml:"action"`
+	Version         string                      `yaml:"version"`
+	Mode            model.RunningMode           `yaml:"mode"`
+	Interval        time.Duration               `yaml:"interval"`
+	CalendarID      string                      `yaml:"calendar_id"`
+	CalendarWebhook calendarWebhook             `yaml:"calendar_webhook"`
+	Handler         map[string]eventHandler     `yaml:"handler"`
+	Action          map[model.ActionName]Action `yaml:"action"`
 }
 
-// EventHandler is event handler which contains action names.
-type EventHandler struct {
+// calendarWebhook is settings for calendar update notification.
+type calendarWebhook struct {
+	Disable bool   `yaml:"disable"`
+	Address string `yaml:"address"`
+}
+
+func (c *calendarWebhook) validate() error {
+	if c.Disable {
+		return nil
+	}
+	u, err := url.Parse(c.Address)
+	if err != nil {
+		return err
+	}
+	if u.Scheme != "https" {
+		return errors.New("scheme must be \"https\"")
+	}
+	if u.Host != "example.com" {
+		return errors.New("must replace placeholder (example.com) with valid host")
+	}
+	return nil
+}
+
+func (c *calendarWebhook) url() (string, bool) {
+	if c.Disable {
+		return "", false
+	}
+	return c.Address, true
+}
+
+// eventHandler is event handler which contains action names.
+type eventHandler struct {
 	Start []model.ActionName `yaml:"start"`
 	End   []model.ActionName `yaml:"end"`
 }
@@ -130,6 +162,11 @@ func (c *Config) validate() error {
 			return fmt.Errorf("unsupported action type: %s", a.Type)
 		}
 	}
+
+	if err := c.CalendarWebhook.validate(); err != nil {
+		return fmt.Errorf("calendar_webhook is invalid: %w", err)
+	}
+
 	return nil
 }
 
@@ -191,4 +228,9 @@ func (c *Config) SyncInterval() time.Duration {
 // Calendar returns google calendar id.
 func (c *Config) Calendar() string {
 	return c.CalendarID
+}
+
+// CalendarWebhookURL returns calendar webhook address and enabled status.
+func (c *Config) CalendarWebhookURL() (string, bool) {
+	return c.CalendarWebhook.url()
 }

@@ -50,6 +50,12 @@ func (s *synchronizer) Sync(ctx context.Context) error {
 	}
 	log.Println("calendar.List:", len(schedules))
 
+	if address, ok := s.cnf.CalendarWebhookURL(); ok {
+		if err := s.cal.Watch(ctx, address, s.cnf.SyncInterval()); err != nil {
+			return fmt.Errorf("failed to register watch address: %w", err)
+		}
+	}
+
 	acm := s.cnf.ActionConfigMap()
 	am := make(map[model.ActionName]*action, len(acm))
 

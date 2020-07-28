@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	calendar "google.golang.org/api/calendar/v3"
 
 	"github.com/ww24/calendar-notifier/domain/model"
@@ -16,6 +18,7 @@ import (
 type Calendar struct {
 	calendarID string
 	newService func(ctx context.Context) (*calendar.Service, error)
+	token      syncToken
 }
 
 // New returns new calendar API wrapper.
@@ -45,6 +48,8 @@ func (c *Calendar) List(ctx context.Context, since, until time.Time) (model.Sche
 		return nil, err
 	}
 
+	c.token.update(events.NextSyncToken)
+
 	schedules := make([]model.Schedule, 0, len(events.Items))
 	for _, item := range events.Items {
 		s, err := toModelSchedule(item)
@@ -59,6 +64,42 @@ func (c *Calendar) List(ctx context.Context, since, until time.Time) (model.Sche
 	}
 
 	return schedules, nil
+}
+
+// Watch watches google calendar update event.
+func (c *Calendar) Watch(ctx context.Context, address string, ttl time.Duration) error {
+	svc, err := c.newService(ctx)
+	if err != nil {
+		return err
+	}
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return fmt.Errorf("failed to generate UUIDv4 as channel id: %w", err)
+	}
+
+	channel := &calendar.Channel{
+		Address: address,
+		Id:      id.String(),
+		Params: map[string]string{
+			"ttl": strconv.Itoa(int(ttl.Seconds())),
+		},
+		Payload: true,
+		Token:   "", // TODO
+	}
+	watchCall := svc.Events.Watch(c.calendarID, channel).
+		Context(ctx).
+		SyncToken(c.token.get())
+
+	ch, err := watchCall.Do()
+	if err != nil {
+		return fmt.Errorf("failed to watch calendar events: %w", err)
+	}
+
+	// DEBUG
+	fmt.Printf("channel: %+v\n", ch)
+
+	return nil
 }
 
 func toModelSchedule(item *calendar.Event) (model.Schedule, error) {
