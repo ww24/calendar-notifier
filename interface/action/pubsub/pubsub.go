@@ -78,7 +78,7 @@ func (a *PubSub) Register(_ context.Context, events ...model.ScheduleEvent) erro
 		if err != nil {
 			return err
 		}
-		a.cli.scheduler.Register(a.name, event, func(ctx context.Context) error {
+		err = a.cli.scheduler.Register(a.name, event, func(ctx context.Context) error {
 			pr := a.topic.Publish(ctx, &pubsub.Message{Data: d})
 			id, err := pr.Get(ctx)
 			if err != nil {
@@ -87,6 +87,9 @@ func (a *PubSub) Register(_ context.Context, events ...model.ScheduleEvent) erro
 			log.Println("[pubsub action] published, server_id:", id)
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

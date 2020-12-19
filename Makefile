@@ -3,6 +3,16 @@ REGION ?= asia-northeast1
 IMAGE := asia.gcr.io/${PROJECT_ID}/calendar-notifier:latest
 CONFIG := $(shell base64 < config.yml)
 
+BIN := $(abspath ./bin)
+GO ?= go
+GO_ENV ?= GOBIN=$(BIN)
+
+$(BIN)/stringer:
+	$(GO_ENV) $(GO) install -mod=mod golang.org/x/tools/cmd/stringer
+
+$(BIN)/wire:
+	$(GO_ENV) $(GO) install -mod=mod github.com/google/wire/cmd/wire
+
 .PHONY: build
 build:
 	docker build -t calendar-notifier .
@@ -42,3 +52,7 @@ run:
 .PHONY: install-tools
 install-tools:
 	cat tools.go | awk -F'"' '/_/ {print $$2}' | xargs -tI {} go install {}
+
+.PHONY: generate
+generate: $(BIN)/stringer $(BIN)/wire
+	PATH=$(BIN):${PATH} $(GO_ENV) $(GO) generate ./...

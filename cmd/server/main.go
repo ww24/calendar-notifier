@@ -14,10 +14,8 @@ import (
 )
 
 const (
-	shutdownTimeout   = 30 * time.Second
-	pollingInterval   = 1 * time.Minute
-	calendarScanRange = 24 * time.Hour
-	defaultPort       = "8080"
+	shutdownTimeout = 30 * time.Second
+	defaultPort     = "8080"
 )
 
 var (

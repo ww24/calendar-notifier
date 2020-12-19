@@ -70,7 +70,7 @@ func (a *HTTP) Register(_ context.Context, events ...model.ScheduleEvent) error 
 		if err != nil {
 			return err
 		}
-		a.cli.scheduler.Register(a.name, event, func(ctx context.Context) error {
+		err = a.cli.scheduler.Register(a.name, event, func(ctx context.Context) error {
 			resp, err := a.cli.cli.Do(req.WithContext(ctx))
 			if err != nil {
 				return err
@@ -78,6 +78,9 @@ func (a *HTTP) Register(_ context.Context, events ...model.ScheduleEvent) error 
 			log.Println("[http action] sent, status:", resp.Status)
 			return nil
 		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 calendar-notifier
 ===
 
+[![Go Reference][go-dev-img]][go-dev-url]
 ![Test on master][github-actions-img]
 
 Calendar Notifier provides event handler and actions triggered by Google Calendar.
@@ -92,3 +93,5 @@ roles/pubsub.publisher
 [github-actions-img]: https://github.com/ww24/calendar-notifier/workflows/Test%20on%20master/badge.svg?branch=master
 [dockeri-img]: https://dockeri.co/image/ww24/calendar-notifier
 [dockeri-url]: https://hub.docker.com/r/ww24/calendar-notifier
+[go-dev-img]: https://pkg.go.dev/badge/github.com/ww24/calendar-notifier.svg
+[go-dev-url]: https://pkg.go.dev/github.com/ww24/calendar-notifier
