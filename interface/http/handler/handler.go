@@ -42,7 +42,10 @@ func (s *syncService) defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(append(d, '\n'))
+	if _, err := w.Write(append(d, '\n')); err != nil {
+		sendError(w, r, err)
+		return
+	}
 }
 
 func (s *syncService) sync(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +70,10 @@ func (s *syncService) sync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(append(d, '\n'))
+	if _, err := w.Write(append(d, '\n')); err != nil {
+		sendError(w, r, err)
+		return
+	}
 }
 
 func sendError(w http.ResponseWriter, r *http.Request, err error) {

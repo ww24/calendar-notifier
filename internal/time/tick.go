@@ -14,7 +14,7 @@ type ImmediateTicker struct {
 // NewImmediateTicker returns wrapped ticker.
 func NewImmediateTicker(interval time.Duration) *ImmediateTicker {
 	ctx, cancel := context.WithCancel(context.Background())
-	c := make(chan time.Time, 0)
+	c := make(chan time.Time)
 	ticker := &ImmediateTicker{
 		C:      c,
 		cancel: cancel,
