@@ -29,7 +29,7 @@ jobs:
           if [ -z "$tag" ]; then
             exit 1
           fi
-          echo 'image_tag = "$tag"' >> release.auto.tfvars
+          echo "image_tag = \"$tag\"" >> release.auto.tfvars
       - name: Init
         run: terraform init
       - name: Validate
