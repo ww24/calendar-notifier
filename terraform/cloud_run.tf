@@ -49,4 +49,6 @@ resource "google_cloud_run_service" "calendar_notifier" {
     percent         = 100
     latest_revision = true
   }
+
+  autogenerate_revision_name = true
 }
