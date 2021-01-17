@@ -22,5 +22,5 @@ vendor/
 !.dockerignore
 
 config.yml
-service_account.json
 bin/
+*.tfvars
