@@ -2,7 +2,7 @@ calendar-notifier
 ===
 
 [![Go Reference][go-dev-img]][go-dev-url]
-![Test on master][github-actions-img]
+![test-and-build][github-actions-img]
 
 Calendar Notifier provides event handler and actions triggered by Google Calendar.
 
