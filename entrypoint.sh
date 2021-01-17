@@ -7,9 +7,12 @@ if [ -n "$SERVICE_ACCOUNT" ]; then
     echo -n "$SERVICE_ACCOUNT" | base64 -d > "$GOOGLE_APPLICATION_CREDENTIALS"
 fi
 
-if [ -n "$CONFIG" ]; then
-    echo -n "$CONFIG" | base64 -d > /usr/local/etc/calendar-notifier/config.yml
+confpath=/usr/local/etc/calendar-notifier/config.yml
+if [ -n "$CONFIG_BASE64" ]; then
+    echo -n "$CONFIG_BASE64" | base64 -d > "$confpath"
+elif [ -n "$CONFIG" ]; then
+    echo -n "$CONFIG" > "$confpath"
 fi
 
 export GOOGLE_APPLICATION_CREDENTIALS
-calendar-notifier -config /usr/local/etc/calendar-notifier/config.yml
+calendar-notifier -config "$confpath"

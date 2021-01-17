@@ -1,13 +1,21 @@
-name: Release
+name: release
 
 on:
   push:
     tags:
       - v[0-9]+.[0-9]+.[0-9]+
 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.0)"
+        required: true
+
 env:
   DOCKER_REPO: ww24/calendar-notifier
+  GAR_REPOSITORY: ww24
   IMAGE_NAME: calendar-notifier
+  GCP_LOCATION: asia-northeast1
 
 jobs:
   lint:
@@ -46,11 +54,19 @@ jobs:
       - name: Test
         run: go test -v -race ./...
 
-  docker_build_test:
+  docker_build:
     name: Build docker image
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       - name: Shellcheck
         env:
           SHELLCHECK_OPTS: -e SC2187
@@ -82,9 +98,29 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: trivy-results.sarif
+      - name: Set image tag
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          tag=$(echo "${GITHUB_REF}" | sed "s/^refs\/tags\/v//")
+          if [ -z "$tag" ]; then
+            exit 1
+          fi
+          echo "IMAGE_TAG=$tag" >> $GITHUB_ENV
+      - name: Set image tag (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          tag=$(echo "${{ github.event.inputs.tag }}" | sed "s/^v//")
+          if [ -z "$tag" ]; then
+            exit 1
+          fi
+          echo "IMAGE_TAG=$tag" >> $GITHUB_ENV
+      - name: Output image tag
+        id: tag
+        run: |
+          echo "::set-output name=image_tag::$IMAGE_TAG"
 
   docker_push:
-    needs: [lint, test, docker_build_test]
+    needs: [lint, test, docker_build]
     name: Build and push docker image
     runs-on: ubuntu-latest
     steps:
@@ -95,13 +131,8 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-      - name: Set image tag
-        run: |
-          tag=$(echo "${GITHUB_REF}" | sed "s/^refs\/tags\/v//")
-          if [ -z "$tag" ]; then
-            exit 1
-          fi
-          echo "IMAGE_TAG=$tag" >> $GITHUB_ENV
+      - name: Setup docker buildx
+        uses: docker/setup-buildx-action@v1
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -113,9 +144,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - name: Setup docker buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build and push docker image
+      - name: Build and push docker image (docker.io, ghcr.io)
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -124,5 +153,60 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ needs.docker_build.outputs.image_tag }}
+            ${{ env.DOCKER_REPO }}:${{ needs.docker_build.outputs.image_tag }}
+
+  docker_push_gar:
+    needs: [lint, test, docker_build]
+    name: Build and push docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Setup docker buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to Google Artifact Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.GCP_LOCATION }}-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GCP_SA_KEY }}
+      - name: Build and push docker image (${{ env.GCP_LOCATION }}-docker.pkg.dev)
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+          tags: |
+            ${{ env.GCP_LOCATION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ needs.docker_build.outputs.image_tag }}
+
+  release:
+    name: Release
+    needs: [docker_build, docker_push_gar]
+    defaults:
+      run:
+        working-directory: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.14.3
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - name: Set image_tag
+        run: |
+          echo 'image_tag = "${{ needs.docker_build.outputs.image_tag }}"' \
+            >> release.auto.tfvars
+      - name: Init
+        run: terraform init
+      - name: Validate
+        run: terraform validate -no-color
+      - name: Apply
+        run: terraform apply -no-color
