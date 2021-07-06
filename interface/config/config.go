@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -70,7 +70,7 @@ func Parse(configPath string) (*Config, error) {
 		return nil, err
 	}
 	defer f.Close()
-	cnf, err := ioutil.ReadAll(f)
+	cnf, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
