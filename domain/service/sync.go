@@ -23,18 +23,16 @@ func NewSynchronizer(
 	cal repository.Calendar,
 	ac repository.ActionConfigurator) Synchronizer {
 	return &synchronizer{
-		cnf:     cnf,
-		cal:     cal,
-		ac:      ac,
-		timeNow: time.Now,
+		cnf: cnf,
+		cal: cal,
+		ac:  ac,
 	}
 }
 
 type synchronizer struct {
-	cnf     repository.Config
-	cal     repository.Calendar
-	ac      repository.ActionConfigurator
-	timeNow func() time.Time
+	cnf repository.Config
+	cal repository.Calendar
+	ac  repository.ActionConfigurator
 }
 
 type action struct {
@@ -43,7 +41,7 @@ type action struct {
 }
 
 func (s *synchronizer) Sync(ctx context.Context) error {
-	now := s.timeNow()
+	now := time.Now()
 	schedules, err := s.cal.List(ctx, now, now.Add(calendarScanRange))
 	if err != nil {
 		return fmt.Errorf("calendar.List: %w", err)
