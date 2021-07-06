@@ -1,12 +1,20 @@
 BIN := $(abspath ./bin)
+BUILD := build
 GO ?= go
-GO_ENV ?= GOBIN=$(BIN)
+GO_ENV ?= GOBIN=$(BIN) CGO_ENABLE=0
 
 $(BIN)/stringer:
 	$(GO_ENV) $(GO) install -mod=mod golang.org/x/tools/cmd/stringer
 
 $(BIN)/wire:
 	$(GO_ENV) $(GO) install -mod=mod github.com/google/wire/cmd/wire
+
+$(BUILD)/server:
+	$(GO_ENV) go build -o $(BUILD)/server ./cmd/server
+
+.PHONY: clean
+clean:
+	$(RM) -r ./build ./bin
 
 .PHONY: build
 build:
@@ -23,3 +31,7 @@ run:
 .PHONY: generate
 generate: $(BIN)/stringer $(BIN)/wire
 	PATH=$(BIN):${PATH} $(GO_ENV) $(GO) generate ./...
+
+.PHONY: scan
+scan: $(BUILD)/server
+	trivy fs -s "HIGH,CRITICAL" --ignore-unfixed --exit-code 1 $(BUILD)
