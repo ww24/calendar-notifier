@@ -1,3 +1,5 @@
+//go:generate mockgen -source=$GOFILE -destination=../../mock/mock_$GOPACKAGE/mock_$GOFILE -package=mock_repository
+
 package repository
 
 import (
