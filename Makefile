@@ -4,10 +4,10 @@ GO ?= go
 GO_ENV ?= GOBIN=$(BIN) CGO_ENABLE=0
 
 $(BIN)/stringer:
-	$(GO_ENV) $(GO) install -mod=mod golang.org/x/tools/cmd/stringer
+	$(GO_ENV) $(GO) install -mod=mod golang.org/x/tools/cmd/stringer@v0.1.4
 
 $(BIN)/wire:
-	$(GO_ENV) $(GO) install -mod=mod github.com/google/wire/cmd/wire
+	$(GO_ENV) $(GO) get github.com/google/wire/cmd/wire@v0.5.0
 
 $(BUILD)/server:
 	$(GO_ENV) go build -o $(BUILD)/server ./cmd/server
@@ -30,7 +30,7 @@ run:
 
 .PHONY: generate
 generate: $(BIN)/stringer $(BIN)/wire
-	PATH=$(BIN):${PATH} $(GO_ENV) $(GO) generate ./...
+	@PATH=$(BIN):${PATH} $(GO_ENV) $(GO) generate ./...
 
 .PHONY: scan
 scan: $(BUILD)/server
