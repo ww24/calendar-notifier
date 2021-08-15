@@ -134,6 +134,7 @@ jobs:
             ${{ env.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
 
   terraform:
+    if: github.actor != 'dependabot[bot]'
     name: Terraform
     defaults:
       run:
