@@ -7,7 +7,7 @@ $(BIN)/stringer:
 	$(GO_ENV) $(GO) install -mod=mod golang.org/x/tools/cmd/stringer@v0.1.4
 
 $(BIN)/wire:
-	$(GO_ENV) $(GO) get github.com/google/wire/cmd/wire@v0.5.0
+	$(GO_ENV) $(GO) install -mod=mod github.com/google/wire/cmd/wire@v0.5.0
 
 $(BIN)/mockgen:
 	$(GO_ENV) $(GO) install -mod=mod github.com/golang/mock/mockgen@v1.6.0
