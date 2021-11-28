@@ -1,0 +1,42 @@
+name: terraform
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "terraform/**"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "terraform/**"
+
+env:
+  TERRAFORM_VERSION: 0.14.3
+
+jobs:
+  terraform:
+    name: Terraform
+    defaults:
+      run:
+        working-directory: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - name: Fmt
+        run: terraform fmt -check
+      - name: Init
+        run: terraform init
+      - name: Validate
+        run: terraform validate -no-color
+      - name: Plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color
+      - name: Apply
+        if: github.event_name == 'push'
+        run: terraform apply -no-color
