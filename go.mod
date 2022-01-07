@@ -3,7 +3,7 @@ module github.com/ww24/calendar-notifier
 go 1.16
 
 require (
-	cloud.google.com/go/cloudtasks v1.0.0
+	cloud.google.com/go/cloudtasks v1.1.0
 	cloud.google.com/go/pubsub v1.17.1
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0
