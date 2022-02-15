@@ -16,7 +16,7 @@ require (
 	github.com/tenntenn/testtime v0.2.2
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	google.golang.org/api v0.67.0
+	google.golang.org/api v0.68.0
 	google.golang.org/genproto v0.0.0-20220207164111-0872dc986b00
 	google.golang.org/grpc v1.44.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
