@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tenntenn/testtime v0.2.2
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
-	google.golang.org/api v0.72.0
+	google.golang.org/api v0.73.0
 	google.golang.org/genproto v0.0.0-20220310185008-1973136f34c6
 	google.golang.org/grpc v1.45.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
