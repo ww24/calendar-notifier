@@ -6,7 +6,7 @@ ENV CGO_ENABLED=0
 RUN go build -o /usr/local/bin/calendar-notifier ./cmd/server
 
 
-FROM alpine:3.17.2
+FROM alpine:3.18.2
 
 RUN apk add --no-cache tzdata ca-certificates
 
